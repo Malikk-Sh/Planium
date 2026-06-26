@@ -1,0 +1,645 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Planium</title>
+  <meta name="theme-color" content="#061427" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Planium" />
+  <meta name="format-detection" content="telephone=no" />
+  <style>
+    :root {
+      --bg: #061427;
+      --panel: rgba(7, 18, 36, 0.78);
+      --panel2: rgba(255,255,255,0.055);
+      --line: rgba(255,255,255,0.12);
+      --muted: #94a3b8;
+      --text: #e5eefb;
+      --white: #fff;
+      --danger: #fb7185;
+      --shadow: 0 24px 80px rgba(0,0,0,.35);
+      --radius: 28px;
+    }
+    * { box-sizing: border-box; }
+    html { -webkit-text-size-adjust: 100%; }
+    button, input, textarea, select { -webkit-tap-highlight-color: transparent; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      min-height: 100dvh;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 8% 0%, rgba(37, 99, 235, .35), transparent 28rem),
+        radial-gradient(circle at 95% 15%, rgba(79, 70, 229, .28), transparent 30rem),
+        radial-gradient(circle at 55% 45%, rgba(6, 182, 212, .12), transparent 26rem),
+        var(--bg);
+    }
+    button, input, textarea, select { font: inherit; }
+    button { cursor: pointer; }
+    .wrap { max-width: 1780px; margin: 0 auto; padding: max(16px, env(safe-area-inset-top)) max(14px, env(safe-area-inset-right)) max(18px, env(safe-area-inset-bottom)) max(14px, env(safe-area-inset-left)); }
+    .hero {
+      position: relative;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 34px;
+      background: rgba(255,255,255,.075);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(18px);
+      padding: 26px;
+    }
+    .hero::before, .hero::after {
+      content: "";
+      position: absolute;
+      width: 280px;
+      height: 280px;
+      border-radius: 999px;
+      filter: blur(56px);
+      pointer-events: none;
+    }
+    .hero::before { background: rgba(14,165,233,.25); top: -130px; right: -80px; }
+    .hero::after { background: rgba(79,70,229,.25); bottom: -150px; left: 38%; }
+    .hero-inner { position: relative; display: flex; gap: 22px; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; }
+    .badge {
+      display: inline-flex; align-items: center; gap: 8px;
+      border: 1px solid rgba(125, 211, 252, .25);
+      border-radius: 999px;
+      background: rgba(56, 189, 248, .11);
+      color: #dff6ff;
+      padding: 9px 14px;
+      font-size: 14px;
+      margin-bottom: 14px;
+    }
+    h1 { margin: 0; font-size: clamp(30px, 5vw, 56px); line-height: 1.03; letter-spacing: -0.04em; max-width: 1000px; }
+    .hero p { color: #cbd5e1; max-width: 850px; line-height: 1.7; margin: 16px 0 0; }
+    .actions { display: flex; gap: 12px; flex-wrap: wrap; }
+    .stat { min-width: 126px; border: 1px solid var(--line); background: rgba(2, 6, 23, .35); border-radius: 22px; padding: 15px 18px; }
+    .stat b { display: block; font-size: 28px; color: #fff; }
+    .stat span { color: var(--muted); font-size: 13px; }
+    .btn {
+      border: 0;
+      border-radius: 20px;
+      padding: 14px 18px;
+      font-weight: 700;
+      transition: .18s ease;
+      display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+      white-space: nowrap;
+    }
+    .btn-primary { background: #fff; color: #071426; box-shadow: 0 12px 28px rgba(0,0,0,.2); }
+    .btn-primary:hover { background: #dff6ff; transform: translateY(-1px); }
+    .btn-soft { background: rgba(255,255,255,.065); color: #e2e8f0; border: 1px solid var(--line); }
+    .btn-soft:hover { background: rgba(255,255,255,.105); }
+    .btn-danger { background: rgba(244,63,94,.12); color: #fecdd3; border: 1px solid rgba(251,113,133,.26); width: 100%; }
+    .btn-danger:hover { background: rgba(244,63,94,.2); }
+    .notice { margin-top: 16px; display: flex; align-items: center; justify-content: space-between; gap: 12px; border: 1px solid var(--line); background: rgba(255,255,255,.045); border-radius: 24px; padding: 12px 14px; color: #cbd5e1; font-size: 14px; }
+    .notice-actions { display: flex; align-items: center; justify-content: flex-end; gap: 10px; flex-wrap: wrap; }
+    .file-input-hidden { display: none; }
+    .layout { margin-top: 22px; display: grid; grid-template-columns: minmax(0,1fr) 430px; gap: 22px; align-items: start; }
+    .board { overflow-x: auto; padding-bottom: 12px; }
+    .columns { display: flex; gap: 18px; min-width: max-content; }
+    .column {
+      width: 342px;
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: 30px;
+      background: rgba(2, 6, 23, .54);
+      box-shadow: var(--shadow);
+      padding: 14px;
+      backdrop-filter: blur(16px);
+    }
+    .col-head { border-radius: 22px; padding: 16px; color: #fff; min-height: 128px; display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; }
+    .gradient-0 { background: linear-gradient(135deg, #0ea5e9, #1d4ed8); border-color: rgba(56,189,248,.28); }
+    .gradient-1 { background: linear-gradient(135deg, #8b5cf6, #4338ca); border-color: rgba(167,139,250,.28); }
+    .gradient-2 { background: linear-gradient(135deg, #10b981, #0f766e); border-color: rgba(52,211,153,.28); }
+    .gradient-3 { background: linear-gradient(135deg, #f97316, #b45309); border-color: rgba(251,146,60,.28); }
+    .gradient-4 { background: linear-gradient(135deg, #ec4899, #be123c); border-color: rgba(244,114,182,.28); }
+    .col-title-row { display: flex; gap: 12px; align-items: center; }
+    .col-icon { width: 44px; height: 44px; display:flex; align-items:center; justify-content:center; background: rgba(255,255,255,.18); border-radius: 16px; font-size: 20px; }
+    .col-head h2 { font-size: 21px; margin: 0; }
+    .col-head p { color: rgba(255,255,255,.74); margin: 5px 0 0; font-size: 13px; line-height: 1.45; }
+    .icon-buttons { display: flex; gap: 5px; }
+    .icon-btn { width: 34px; height: 34px; border: 0; border-radius: 12px; background: rgba(255,255,255,.12); color: rgba(255,255,255,.78); }
+    .icon-btn:hover { background: rgba(255,255,255,.22); color: #fff; }
+    .tasks { margin-top: 13px; display: grid; gap: 10px; }
+    .task-card { width: 100%; text-align: left; border: 1px solid var(--line); border-radius: 22px; background: rgba(255,255,255,.058); color: var(--text); padding: 14px; transition: .15s ease; }
+    .task-card:hover, .task-card.active { background: rgba(255,255,255,.095); border-color: rgba(255,255,255,.32); }
+    .task-top { display:flex; justify-content:space-between; align-items:flex-start; gap: 10px; }
+    .task-title { margin:0; font-weight: 750; line-height: 1.4; }
+    .pill { flex-shrink:0; border-radius: 999px; border: 1px solid rgba(255,255,255,.14); padding: 5px 9px; font-size: 12px; }
+    .status-idea { background: rgba(100,116,139,.2); color: #e2e8f0; }
+    .status-planned { background: rgba(14,165,233,.2); color: #dff6ff; }
+    .status-active { background: rgba(245,158,11,.2); color: #fef3c7; }
+    .status-waiting { background: rgba(139,92,246,.2); color: #ede9fe; }
+    .status-done { background: rgba(16,185,129,.2); color: #d1fae5; }
+    .task-meta { display:flex; justify-content:space-between; color: var(--muted); font-size: 12px; margin-top: 12px; }
+    .bar { height: 8px; border-radius: 999px; background: rgba(15,23,42,.86); overflow: hidden; margin-top: 7px; }
+    .bar > span { display:block; height:100%; width:0%; background: rgba(255,255,255,.72); border-radius: 999px; }
+    .empty { border: 1px dashed rgba(255,255,255,.17); border-radius: 22px; padding: 20px; color: var(--muted); text-align:center; font-size: 14px; line-height:1.5; }
+    .add-task { margin-top: 13px; width: 100%; }
+    .detail { position: sticky; top: 22px; max-height: calc(100vh - 44px); overflow-y: auto; border: 1px solid var(--line); border-radius: 34px; background: rgba(2, 6, 23, .68); box-shadow: var(--shadow); padding: 20px; backdrop-filter: blur(18px); }
+    .detail-empty { min-height: 420px; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; color: var(--muted); padding: 24px; }
+    .detail-empty .big { font-size: 42px; background: rgba(14,165,233,.12); width: 86px; height:86px; display:flex; align-items:center; justify-content:center; border-radius: 999px; margin-bottom: 16px; }
+    .field-label { display:block; color: #cbd5e1; font-weight: 700; font-size: 14px; margin: 18px 0 8px; }
+    .input, .textarea, .select {
+      width: 100%; border: 1px solid var(--line); border-radius: 19px; background: rgba(255,255,255,.06); color: #fff; padding: 13px 14px; outline: none;
+    }
+    .input:focus, .textarea:focus, .select:focus { border-color: rgba(125,211,252,.55); }
+    .select { background-color: #0f172a; }
+    .textarea { resize: vertical; min-height: 138px; line-height: 1.55; }
+    .detail-top { display:flex; gap:12px; justify-content:space-between; align-items:flex-start; }
+    .detail .title-input { font-size: 21px; font-weight: 800; line-height: 1.35; min-height: 58px; overflow:hidden; }
+    .mini-grid { display:grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 14px; }
+    .mini { border: 1px solid var(--line); border-radius: 20px; background: rgba(255,255,255,.055); padding: 13px; }
+    .mini span { color: var(--muted); font-size: 13px; }
+    .mini b { display:block; color:#fff; font-size:26px; margin-top: 2px; }
+    .subtasks { display:grid; gap: 8px; margin-top: 10px; }
+    .subtask { display:flex; align-items:center; gap: 9px; border: 1px solid var(--line); border-radius: 18px; background: rgba(255,255,255,.05); padding: 10px; }
+    .check { width: 24px; height: 24px; border-radius: 999px; border: 1px solid rgba(255,255,255,.32); background: transparent; color: #bbf7d0; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+    .subtask.done textarea { color: #64748b; text-decoration: line-through; }
+    .subtask textarea { flex:1; min-width:0; background: transparent; border: 0; outline:0; color:#f8fafc; resize:none; overflow:hidden; line-height:1.45; min-height: 30px; padding: 3px 0; }
+    .subtask .delete { width: 31px; height:31px; border:0; border-radius: 12px; background: transparent; color: #94a3b8; }
+    .subtask .delete:hover { background: rgba(255,255,255,.08); color: #fecdd3; }
+    .add-row { display:flex; gap: 8px; margin-top: 10px; align-items:stretch; }
+    .add-row .btn { padding: 0 15px; }
+    .add-row textarea { min-height: 56px; max-height: 140px; resize: vertical; line-height: 1.4; }
+    .auto-textarea { resize: none; overflow: hidden; }
+    .modal { position: fixed; inset:0; display:none; align-items:center; justify-content:center; background: rgba(2,6,23,.72); backdrop-filter: blur(8px); padding: 16px; z-index: 10; }
+    .modal.open { display:flex; }
+    .modal-card { width: min(540px, 100%); border: 1px solid var(--line); border-radius: 32px; background: #071426; box-shadow: var(--shadow); padding: 22px; }
+    .modal-top { display:flex; justify-content:space-between; align-items:flex-start; gap: 12px; }
+    .modal h2 { margin:0; font-size: 26px; }
+    .modal p { color: var(--muted); line-height:1.55; margin: 8px 0 0; }
+    .colors { display:grid; grid-template-columns: repeat(5,1fr); gap: 8px; margin-top: 10px; }
+    .color-choice { height: 48px; border: 1px solid rgba(255,255,255,.16); border-radius: 18px; }
+    .color-choice.selected { outline: 3px solid rgba(255,255,255,.9); outline-offset: 2px; }
+    @media (max-width: 1120px) {
+      .layout { grid-template-columns: 1fr; }
+      .detail { position: static; max-height: none; }
+    }
+    @media (max-width: 620px) {
+      .wrap { padding: 14px; }
+      .hero { padding: 18px; border-radius: 26px; }
+      .notice { flex-direction: column; align-items: stretch; }
+      .notice-actions { justify-content: stretch; }
+      .notice-actions .btn { width: 100%; }
+      .column { width: 308px; }
+      .actions { width:100%; }
+      .stat { flex:1; }
+      .btn-primary { width:100%; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header class="hero">
+      <div class="hero-inner">
+        <div>
+          <div class="badge">📋 Planium</div>
+          <h1>Планируй жизнь, работу и проекты в Planium</h1>
+          <p>Создавай разделы, добавляй задачи, веди подпланы и фиксируй статус каждого направления. Все данные сохраняются автоматически на этом устройстве.</p>
+        </div>
+        <div class="actions">
+          <div class="stat"><b id="totalTasks">0</b><span>всего задач</span></div>
+          <div class="stat"><b id="doneTasks">0</b><span>завершено</span></div>
+          <button id="newColumnBtn" class="btn btn-primary">＋ Новый раздел</button>
+        </div>
+      </div>
+    </header>
+
+    <div class="notice">
+      <span>Автосохранение включено. Все изменения сохраняются автоматически.</span>
+      <div class="notice-actions">
+        <span id="saveStatus" class="btn btn-soft" style="pointer-events:none;">✓ Автосохранено</span>
+      </div>
+    </div>
+
+    <main class="layout">
+      <section class="board">
+        <div id="columns" class="columns"></div>
+      </section>
+      <aside id="detail" class="detail"></aside>
+    </main>
+  </div>
+
+  <div id="columnModal" class="modal" aria-hidden="true">
+    <div class="modal-card">
+      <div class="modal-top">
+        <div>
+          <h2 id="modalTitle">Новый раздел</h2>
+          <p id="modalText">Создай отдельную колонку для направления жизни или проекта.</p>
+        </div>
+        <button id="closeModalBtn" class="icon-btn">✕</button>
+      </div>
+      <label class="field-label" for="columnTitleInput">Название</label>
+      <input id="columnTitleInput" class="input" placeholder="Например: Учеба, Семья, Бизнес" />
+      <label class="field-label" for="columnDescInput">Описание</label>
+      <input id="columnDescInput" class="input" placeholder="Кратко: что хранится в этом разделе" />
+      <div class="field-label">Цвет колонки</div>
+      <div id="colorChoices" class="colors"></div>
+      <button id="saveColumnBtn" class="btn btn-primary" style="width:100%; margin-top:18px;">💾 Сохранить</button>
+    </div>
+  </div>
+
+  <script>
+    const STORAGE_KEY = 'dark-blue-life-planner-standalone-v1';
+    const LEGACY_STORAGE_KEYS = [
+      'planium-ios-local-v1'
+    ];
+    const statuses = [
+      ['idea', 'Идея'],
+      ['planned', 'Запланировано'],
+      ['active', 'В работе'],
+      ['waiting', 'Ожидание'],
+      ['done', 'Готово'],
+    ];
+    const colors = [
+      ['Синий', 'gradient-0'],
+      ['Фиолетовый', 'gradient-1'],
+      ['Изумрудный', 'gradient-2'],
+      ['Оранжевый', 'gradient-3'],
+      ['Розовый', 'gradient-4'],
+    ];
+    const icons = { life: '💙', work: '💼', money: '💰', default: '🗂️' };
+    const id = () => (crypto.randomUUID ? crypto.randomUUID() : Date.now() + '-' + Math.random());
+
+    const initialData = [
+      { id: id(), title: 'Моя жизнь', description: 'Личные цели, привычки, семья, развитие.', colorIndex: 1, icon: 'life', tasks: [] },
+      { id: id(), title: 'Работа', description: 'Рабочие проекты, задачи, контроль статусов.', colorIndex: 3, icon: 'work', tasks: [] },
+      { id: id(), title: 'Проекты', description: 'Крупные задачи, объекты и этапы.', colorIndex: 0, icon: 'default', tasks: [] },
+      { id: id(), title: 'Финансы', description: 'Доходы, расходы, платежи, накопления.', colorIndex: 2, icon: 'money', tasks: [] },
+      { id: id(), title: 'Здоровье', description: 'Самочувствие, режим, спорт, питание.', colorIndex: 4, icon: 'life', tasks: [] },
+      { id: id(), title: 'Идеи', description: 'Мысли, задумки и будущие возможности.', colorIndex: 0, icon: 'default', tasks: [] }
+    ];
+
+    let columns = load();
+    let selected = null;
+    let editingColumnId = null;
+    let tempColorIndex = 3;
+
+    const el = (name) => document.getElementById(name);
+    const columnsEl = el('columns');
+    const detailEl = el('detail');
+    const modalEl = el('columnModal');
+
+    function countTasks(data) {
+      return Array.isArray(data) ? data.reduce((sum, column) => sum + (Array.isArray(column.tasks) ? column.tasks.length : 0), 0) : 0;
+    }
+
+    function load() {
+      let best = null;
+      let bestCount = -1;
+      for (const key of LEGACY_STORAGE_KEYS) {
+        try {
+          const raw = localStorage.getItem(key);
+          if (!raw) continue;
+          const parsed = JSON.parse(raw);
+          const taskCount = countTasks(parsed);
+          if (Array.isArray(parsed) && taskCount > bestCount) {
+            best = parsed;
+            bestCount = taskCount;
+          }
+        } catch (e) {}
+      }
+      if (best) return best;
+      return structuredClone(initialData);
+    }
+
+    function save() {
+      try {
+        const payload = JSON.stringify(columns);
+        for (const key of LEGACY_STORAGE_KEYS) localStorage.setItem(key, payload);
+        localStorage.setItem('life-planner-last-autosave-at', new Date().toISOString());
+        const status = document.getElementById('saveStatus');
+        if (status) status.textContent = '✓ Автосохранено ' + new Date().toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
+      } catch (e) {
+        const status = document.getElementById('saveStatus');
+        if (status) status.textContent = '⚠ Не удалось сохранить';
+        console.error('Autosave failed', e);
+      }
+    }
+    function escapeHtml(str = '') {
+      return String(str).replace(/[&<>'"]/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[s]));
+    }
+    function statusLabel(value) { return (statuses.find(s => s[0] === value) || statuses[0])[1]; }
+    function progress(task) {
+      if (!task.subtasks || task.subtasks.length === 0) return 0;
+      const done = task.subtasks.filter(s => s.done).length;
+      return Math.round(done / task.subtasks.length * 100);
+    }
+    function getSelected() {
+      if (!selected) return [null, null];
+      const column = columns.find(c => c.id === selected.columnId);
+      const task = column?.tasks.find(t => t.id === selected.taskId);
+      return [column, task];
+    }
+
+    function render() {
+      save();
+      renderStats();
+      renderColumns();
+      renderDetail();
+    }
+    function renderStats() {
+      const total = columns.reduce((sum, c) => sum + c.tasks.length, 0);
+      const done = columns.reduce((sum, c) => sum + c.tasks.filter(t => t.status === 'done').length, 0);
+      el('totalTasks').textContent = total;
+      el('doneTasks').textContent = done;
+    }
+    function renderColumns() {
+      columnsEl.innerHTML = columns.map(column => `
+        <article class="column">
+          <div class="col-head gradient-${column.colorIndex % colors.length}">
+            <div class="col-title-row">
+              <div class="col-icon">${icons[column.icon] || icons.default}</div>
+              <div>
+                <h2>${escapeHtml(column.title)}</h2>
+                <p>${escapeHtml(column.description)}</p>
+              </div>
+            </div>
+            <div class="icon-buttons">
+              <button class="icon-btn" data-action="edit-column" data-column="${column.id}" title="Редактировать">✎</button>
+              <button class="icon-btn" data-action="delete-column" data-column="${column.id}" title="Удалить">🗑</button>
+            </div>
+          </div>
+          <div class="tasks">
+            ${column.tasks.length ? column.tasks.map(task => `
+              <button class="task-card ${selected?.taskId === task.id ? 'active' : ''}" data-action="select-task" data-column="${column.id}" data-task="${task.id}">
+                <div class="task-top">
+                  <p class="task-title">${escapeHtml(task.title)}</p>
+                </div>
+                <div class="task-meta"><span>${task.subtasks.length} подпланов</span><span>${progress(task)}%</span></div>
+                <div class="bar"><span style="width:${progress(task)}%"></span></div>
+              </button>
+            `).join('') : `<div class="empty">Здесь пока нет задач. Добавь первый план или проект.</div>`}
+          </div>
+          <button class="btn btn-soft add-task" data-action="add-task" data-column="${column.id}">＋ Добавить задачу</button>
+        </article>
+      `).join('');
+    }
+    function autoResize(elm) {
+      if (!elm) return;
+      elm.style.height = 'auto';
+      elm.style.height = Math.max(elm.scrollHeight, 30) + 'px';
+    }
+
+    function autoResizeAll() {
+      document.querySelectorAll('textarea.auto-textarea, #newSubtaskInput').forEach(autoResize);
+    }
+
+    function renderDetail() {
+      const [column, task] = getSelected();
+      if (!column || !task) {
+        detailEl.innerHTML = `
+          <div class="detail-empty">
+            <div class="big">✎</div>
+            <h2 style="color:#fff; margin:0;">Выбери задачу</h2>
+            <p>Нажми на задачу в любой колонке, чтобы открыть подпланы.</p>
+          </div>`;
+        return;
+      }
+      detailEl.innerHTML = `
+        <div class="detail-top">
+          <div style="flex:1; min-width:0;">
+            <div style="color:var(--muted); font-size:14px; margin-bottom:8px;">Раздел: ${escapeHtml(column.title)}</div>
+            <textarea class="input title-input auto-textarea" data-action="update-task-title" rows="1">${escapeHtml(task.title)}</textarea>
+          </div>
+          <button class="icon-btn" data-action="close-detail">✕</button>
+        </div>
+        <div class="mini-grid">
+          <div class="mini"><span>Прогресс</span><b>${progress(task)}%</b></div>
+          <div class="mini"><span>Подпланы</span><b>${task.subtasks.length}</b></div>
+        </div>
+        <div style="display:flex; justify-content:space-between; align-items:center; gap:12px; margin-top:20px;">
+          <h3 style="margin:0; color:#fff;">Подпланы</h3>
+        </div>
+        <div class="subtasks">
+          ${task.subtasks.map(sub => `
+            <div class="subtask ${sub.done ? 'done' : ''}">
+              <button class="check" data-action="toggle-subtask" data-subtask="${sub.id}">${sub.done ? '✓' : ''}</button>
+              <textarea class="auto-textarea" data-action="update-subtask" data-subtask="${sub.id}" rows="1">${escapeHtml(sub.title)}</textarea>
+              <button class="delete" data-action="delete-subtask" data-subtask="${sub.id}">🗑</button>
+            </div>
+          `).join('')}
+        </div>
+        <div class="add-row">
+          <textarea id="newSubtaskInput" class="input" rows="2" placeholder="Новый подплан, например: Проводка электричества"></textarea>
+          <button class="btn btn-primary" data-action="add-subtask">＋</button>
+        </div>
+        <button class="btn btn-danger" data-action="delete-task" style="margin-top:18px;">🗑 Удалить задачу</button>
+      `;
+      autoResizeAll();
+    }
+
+    function openModal(column = null) {
+      editingColumnId = column?.id || null;
+      tempColorIndex = column?.colorIndex ?? 3;
+      el('modalTitle').textContent = column ? 'Редактировать раздел' : 'Новый раздел';
+      el('modalText').textContent = column ? 'Измени название, описание или цвет существующей колонки.' : 'Создай отдельную колонку для направления жизни или проекта.';
+      el('columnTitleInput').value = column?.title || '';
+      el('columnDescInput').value = column?.description || '';
+      renderColorChoices();
+      modalEl.classList.add('open');
+      modalEl.setAttribute('aria-hidden', 'false');
+      setTimeout(() => el('columnTitleInput').focus(), 30);
+    }
+    function closeModal() {
+      modalEl.classList.remove('open');
+      modalEl.setAttribute('aria-hidden', 'true');
+      editingColumnId = null;
+    }
+    function renderColorChoices() {
+      el('colorChoices').innerHTML = colors.map((color, index) => `
+        <button class="color-choice ${color[1]} ${tempColorIndex === index ? 'selected' : ''}" data-action="choose-color" data-color="${index}" title="${color[0]}"></button>
+      `).join('');
+    }
+    function saveColumnFromModal() {
+      const title = el('columnTitleInput').value.trim();
+      if (!title) return;
+      const description = el('columnDescInput').value.trim() || 'Раздел для планов и задач.';
+      if (editingColumnId) {
+        columns = columns.map(c => c.id === editingColumnId ? { ...c, title, description, colorIndex: tempColorIndex } : c);
+      } else {
+        columns.push({ id: id(), title, description, colorIndex: tempColorIndex, icon: 'default', tasks: [] });
+      }
+      closeModal();
+      render();
+    }
+
+    function updateSelectedTask(patch) {
+      const [column, task] = getSelected();
+      if (!column || !task) return;
+      Object.assign(task, patch);
+      render();
+    }
+
+    function getTodayString() {
+      const d = new Date();
+      const y = d.getFullYear();
+      const m = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      return `${y}-${m}-${day}`;
+    }
+
+    function downloadBackup() {
+      save();
+      const data = JSON.stringify(columns, null, 2);
+      const blob = new Blob([data], { type: 'application/json;charset=utf-8' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = `Резервная копия планировщика ${getTodayString()}.json`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      setTimeout(() => URL.revokeObjectURL(link.href), 1000);
+    }
+
+    function normalizeImportedColumns(importedColumns) {
+      if (!Array.isArray(importedColumns)) throw new Error('Файл не похож на резервную копию планировщика.');
+      return importedColumns.map((column, columnIndex) => ({
+        id: column.id || id(),
+        title: String(column.title || `Раздел ${columnIndex + 1}`),
+        description: String(column.description || 'Раздел для планов и задач.'),
+        colorIndex: Number.isFinite(Number(column.colorIndex)) ? Number(column.colorIndex) : columnIndex % colors.length,
+        icon: column.icon || 'default',
+        tasks: Array.isArray(column.tasks) ? column.tasks.map((task, taskIndex) => ({
+          id: task.id || id(),
+          title: String(task.title || `Задача ${taskIndex + 1}`),
+          status: statuses.some(([value]) => value === task.status) ? task.status : 'idea',
+          notes: String(task.notes || ''),
+          subtasks: Array.isArray(task.subtasks) ? task.subtasks.map((subtask, subtaskIndex) => ({
+            id: subtask.id || id(),
+            title: String(subtask.title || `Подплан ${subtaskIndex + 1}`),
+            done: Boolean(subtask.done),
+          })) : [],
+        })) : [],
+      }));
+    }
+
+    function restoreBackupFile(file) {
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        try {
+          const parsed = JSON.parse(reader.result);
+          const backupColumns = Array.isArray(parsed) ? parsed : parsed.columns;
+          const restored = normalizeImportedColumns(backupColumns);
+          if (!restored.length && !confirm('В резервной копии нет колонок. Все равно восстановить пустую доску?')) return;
+          if (!confirm('Восстановить данные из выбранной резервной копии? Текущие данные в приложении будут заменены.')) return;
+          columns = restored;
+          selected = null;
+          save();
+          render();
+          alert('Резервная копия восстановлена.');
+        } catch (error) {
+          alert('Не удалось восстановить резервную копию. Выбери файл .json, который был скачан из этого приложения.');
+          console.error(error);
+        } finally {
+          el('restoreInput').value = '';
+        }
+      };
+      reader.readAsText(file);
+    }
+
+    document.addEventListener('click', (e) => {
+      const target = e.target.closest('[data-action]');
+      if (!target) return;
+      const action = target.dataset.action;
+      const columnId = target.dataset.column;
+      const taskId = target.dataset.task;
+      const subtaskId = target.dataset.subtask;
+
+      // Важно: поля ввода тоже имеют data-action для автосохранения.
+      // При клике по ним не нужно перерисовывать панель, иначе курсор "выкидывает" из поля.
+      if (['update-task-title', 'update-status', 'update-notes', 'update-subtask'].includes(action)) return;
+
+      if (action === 'select-task') selected = { columnId, taskId };
+      if (action === 'add-task') {
+        const column = columns.find(c => c.id === columnId);
+        const task = { id: id(), title: 'Новая задача', status: 'idea', notes: '', subtasks: [] };
+        column.tasks.unshift(task);
+        selected = { columnId, taskId: task.id };
+      }
+      if (action === 'delete-column') {
+        if (confirm('Удалить этот раздел вместе со всеми задачами?')) {
+          columns = columns.filter(c => c.id !== columnId);
+          if (selected?.columnId === columnId) selected = null;
+        }
+      }
+      if (action === 'edit-column') openModal(columns.find(c => c.id === columnId));
+      if (action === 'close-detail') selected = null;
+      if (action === 'delete-task') {
+        const [column, task] = getSelected();
+        if (column && task && confirm('Удалить эту задачу?')) {
+          column.tasks = column.tasks.filter(t => t.id !== task.id);
+          selected = null;
+        }
+      }
+      if (action === 'toggle-subtask') {
+        const [column, task] = getSelected();
+        const sub = task?.subtasks.find(s => s.id === subtaskId);
+        if (sub) sub.done = !sub.done;
+      }
+      if (action === 'delete-subtask') {
+        const [column, task] = getSelected();
+        if (task) task.subtasks = task.subtasks.filter(s => s.id !== subtaskId);
+      }
+      if (action === 'add-subtask') {
+        const input = el('newSubtaskInput');
+        const title = input.value.trim();
+        const [column, task] = getSelected();
+        if (title && task) task.subtasks.push({ id: id(), title, done: false });
+      }
+      if (action === 'choose-color') {
+        tempColorIndex = Number(target.dataset.color);
+        renderColorChoices();
+        return;
+      }
+      render();
+    });
+
+    document.addEventListener('input', (e) => {
+      const target = e.target;
+      const action = target.dataset.action;
+      if (target.tagName === 'TEXTAREA') autoResize(target);
+      if (!action) return;
+      const [column, task] = getSelected();
+      if (!task) return;
+      if (action === 'update-task-title') task.title = target.value;
+      if (action === 'update-status') task.status = target.value;
+      if (action === 'update-notes') task.notes = target.value;
+      if (action === 'update-subtask') {
+        const sub = task.subtasks.find(s => s.id === target.dataset.subtask);
+        if (sub) sub.title = target.value;
+      }
+      save();
+      renderStats();
+      renderColumns();
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') closeModal();
+      if (e.key === 'Enter' && e.target.id === 'newSubtaskInput' && !e.shiftKey) {
+        e.preventDefault();
+        const [column, task] = getSelected();
+        const title = e.target.value.trim();
+        if (title && task) {
+          task.subtasks.push({ id: id(), title, done: false });
+          render();
+        }
+      }
+    });
+
+    el('newColumnBtn').addEventListener('click', () => openModal());
+    el('closeModalBtn').addEventListener('click', closeModal);
+    el('saveColumnBtn').addEventListener('click', saveColumnFromModal);
+    modalEl.addEventListener('click', (e) => { if (e.target === modalEl) closeModal(); });
+    // Ручные кнопки резервного копирования, восстановления и сброса убраны.
+    // Все изменения сохраняются автоматически.
+    window.addEventListener('beforeunload', save);
+    setInterval(save, 3000);
+
+    render();
+  </script>
+</body>
+</html>
